@@ -10,7 +10,7 @@ import org.springframework.web.client.RestClient;
 public class LoanCheckController {
 	@GetMapping("/loancheckbc/{cs}/{loanamt}/{salary}")
 	public ResponseEntity<LoanResponse> checkLoanLimit(@PathVariable("cs")int cs,@PathVariable("loanamt")int loanamt,@PathVariable("salary")int salary){
-		System.out.println("in check loan limit..... feb20 "+loanamt);
+		System.out.println("in check loan limit.....======== feb20 "+loanamt);
 		int approvedLoanAmt=0;
 		int status=0;
 		if (salary > 50000 && cs > 700)
