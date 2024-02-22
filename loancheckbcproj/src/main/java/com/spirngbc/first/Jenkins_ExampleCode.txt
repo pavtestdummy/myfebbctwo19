@@ -1,21 +1,16 @@
+
 pipeline {
     agent any  
-    environment {
-        VERSION="1.0.01"
-    }
+ 
     tools {
         
         jdk "pavfeb20java"
         maven "pavfeb20maven"
     }
-    parameters {
-        
-        string(name: 'DEPLOY_ENV', defaultValue: 'staging', description: '')
-    }
     stages{
         stage("check out"){
             steps{
-             git branch: 'main', credentialsId: 'pgitcre', url: 'https://github.com/pavtestdummy/myfebbctwo19.git'   
+             git branch: 'main', url: 'https://github.com/pavtestdummy/myfebbctwo19.git'   
             }
         }
         // buikd stage 
@@ -23,31 +18,37 @@ pipeline {
             steps{
                //  echo "build stage ${params.DEPLOY_ENV}"
                echo "${env.WORKSPACE}"
-               bat "mvn clean package -f ${env.WORKSPACE}\\loancheckbcproj\\pom.xml"
+               sh "mvn clean package -f ${env.WORKSPACE}/loancheckbcproj/pom.xml -Dmaven.test.skip"
             }
                }
-        stage("RUN"){
+           
+           
+           stage('clean'){
+               
+               steps{
+                   sh "docker rm loanapp --force"
+               }
+           }    
+        stage("Build Image"){
                    steps{
-               //  echo "build stage ${params.DEPLOY_ENV}"
-               echo "${env.WORKSPACE}"
-               bat "java -jar ${env.WORKSPACE}\\loancheckbcproj\\target\\LoanCheckBcProj.jar"
+                     sh "docker build -t loanapp . -f ${env.WORKSPACE}/loancheckbcproj/Dockerfile"
            }
         }
 
         // end
+        
+        
+        stage("Run Image"){
+            
+            steps{
+                
+                sh "docker container  run -itd -p 9090:9000 --name loanapp loanapp"
+            }
+        }
+            
+        }
     
-    }
-    post {
-        
-        always{
-                 echo 'always'
-        }
-        success{
-                echo 'success'
-        }
-        
-        failure {
-               echo 'failure'
-        }
-    }
+    
+    
+ 
 }
